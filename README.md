@@ -1,11 +1,11 @@
-# SovereignSpecAi
-> SovereignSpecAi is a local, technology-agnostic AI coding orchestrator designed as a strict alternative to cloud-dependent agents (like Claude Code or Junie). It allows you to build professional software on consumer hardware without leaking intellectual property.
+# SovereignSpecAI
+> SovereignSpecAI is a local, technology-agnostic AI coding orchestrator designed as a strict alternative to cloud-dependent agents (like Claude Code or Junie). It allows you to build professional software on consumer hardware without leaking intellectual property.
 
 ## Why?
 Because your business logic belongs to you, not to a model provider's training set.
 
 ## The Vision
-SovereignSpec is a lightweight, local-first orchestration layer for Spec-Driven Development (SDD). It turns a standard Linux machine with 16GB VRAM into an autonomous code factory.
+SovereignSpecAI is a lightweight, local-first orchestration layer for Spec-Driven Development (SDD). It turns a standard Linux machine with 16GB VRAM into an autonomous code factory.
 
 ## The Stack
 - **Orchestration:** Streamlit Dashboard

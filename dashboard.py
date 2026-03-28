@@ -28,7 +28,7 @@ def load_config():
         with open(config_path, "r") as f:
             return yaml.safe_load(f)
     return {
-        "project_name": "SovereignSpec",
+        "project_name": "SovereignSpecAI",
         "brand_emoji": "🤖",
         "stages": ["01_icebox", "02_backlog", "03_dev", "04_review", "05_done"],
         "default_model": "ollama/qwen2.5-coder:14b"
@@ -62,7 +62,7 @@ def init_env():
 
     gitignore_path = os.path.join(PROJECT_ROOT, ".gitignore")
     tool_dir = os.path.basename(DASHBOARD_DIR)
-    entry = f"\n# SovereignSpec Tooling\n{tool_dir}/\n"
+    entry = f"\n# SovereignSpecAI Tooling\n{tool_dir}/\n"
     if os.path.exists(gitignore_path):
         with open(gitignore_path, "r") as f:
             content = f.read()
