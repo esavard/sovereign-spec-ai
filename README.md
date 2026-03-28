@@ -1,11 +1,16 @@
-# SovereignSpecAi
-> SovereignSpecAi is a local, technology-agnostic AI coding orchestrator designed as a strict alternative to cloud-dependent agents (like Claude Code or Junie). It allows you to build professional software on consumer hardware without leaking intellectual property.
+# SovereignSpecAI
+> SovereignSpecAI is a local, technology-agnostic AI coding orchestrator designed as a strict alternative to cloud-dependent agents (like Claude Code or Junie). It allows you to build professional software on consumer hardware without leaking intellectual property.
 
-## Why?
-Because your business logic belongs to you, not to a model provider's training set.
+## The Core Philosophy
+Local LLMs often struggle with massive codebases due to context window limits and reasoning constraints. SovereignSpecAI solves this by enforcing architectural discipline before a single line of code is written.
+
+- **DDD/EDD Driven**: We use Domain-Driven Design and Event-Driven Architecture (via Mermaid diagrams and specs) to break down complex systems into atomic, strictly bounded tasks.
+- **Local-First Orchestration**: Powered by Ollama and `aider`, agents operate entirely on your machine. Your IP never leaves your hardware.
+- **Technology Agnostic**: The architecture dictates the logic; the agents adapt to your chosen stack (Rust, Go, TypeScript, C++, etc.).
+- **KISS & Clean Code**: The pipeline enforces a strict Kanban lifecycle (Icebox -> Backlog -> Review -> Done), preventing AI over-engineering and ensuring continuous human-in-the-loop review.
 
 ## The Vision
-SovereignSpec is a lightweight, local-first orchestration layer for Spec-Driven Development (SDD). It turns a standard Linux machine with 16GB VRAM into an autonomous code factory.
+SovereignSpecAI is a lightweight, local-first orchestration layer for Spec-Driven Development (SDD). It turns a standard Linux machine with 16GB VRAM into an autonomous code factory.
 
 ## The Stack
 - **Orchestration:** Streamlit Dashboard
