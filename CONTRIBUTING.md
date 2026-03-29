@@ -22,7 +22,7 @@ Thank you for your interest in contributing to SovereignSpecAI — a local-first
 
 ## Code of Conduct
 
-This project follows the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). By participating, you agree to uphold a welcoming and respectful environment for everyone.
+This project follows the [Contributor Covenant Code of Conduct](./CODE_OF_CONDUCT.md). By participating, you agree to uphold a welcoming and respectful environment for everyone.
 
 ---
 
@@ -71,14 +71,14 @@ cd sovereign-spec-ai
 # 2. Install uv (if not already installed)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# 3. Sync dependencies and create virtual environment
+# 3. Sync dependencies and activate the virtual environment
 uv sync
 
-# 4. Run the dashboard locally
-uv run streamlit run dashboard.py
+# 4. Verify the CLI is working
+uv run sovereign --help
 ```
 
-**Prerequisites:** Linux, Python 3.10+, Ollama, Aider (`pip install aider-chat`).
+**Prerequisites:** Linux, Python 3.12+, Ollama with a model pulled (e.g. `ollama pull qwen2.5-coder:14b-instruct-q4_K_M`).
 
 ---
 
@@ -108,7 +108,7 @@ Optional longer explanation.
 
 Examples:
 ```
-feat(dashboard): add Icebox drag-and-drop support
+feat(architect): generate tasks from Mermaid blueprint
 fix(aider): handle missing model fallback gracefully
 docs(readme): clarify VRAM requirements
 ```

@@ -14,6 +14,10 @@ You are running in an automated, headless pipeline.
 3. **No Dead Code**: Remove any unused imports or failed attempts before outputting.
 4. **Language**: All code, variables, and documentation MUST be in English.
 5. **Modularity**: Respect existing architectural boundaries (DDD/EDD).
+6. **Unit Testing First**:
+ > - You MUST write fast, isolated unit tests for the Acceptance Criteria.
+ > - Use the native/standard test runner for the stack (e.g., `vitest` for SvelteKit, `pytest` for Python).
+ > - **KISS**: Mock external dependencies (like IndexedDB or network calls). Do not write slow integration tests unless explicitly asked.
 
 ## Action
 Read the task, create or edit the necessary files (e.g., package.json, source files), and fulfill the Acceptance Criteria.

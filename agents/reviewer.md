@@ -7,6 +7,10 @@
 - **No Dead Code**: Zero tolerance for unused imports, commented-out code, or "todo" markers.
 - **Clean Code**: Variable names must be descriptive and English-only. Logic must be readable without excessive comments.
 - **Documentation**: Verify that the code is self-documenting or has concise English comments where logic is non-trivial.
+- **Test Coverage & Integrity (BDD/TDD)**: You MUST cross-reference the `spec.md` for explicit testing Acceptance Criteria.
+- **Domain Logic**: If BDD tests (Given/When/Then) are requested, verify they are implemented, fast, and assert the correct state mutations or Domain Events.
+- **Infrastructure/Utils**: If standard unit tests are requested, verify they test Input/Output and properly mock external dependencies (e.g., IndexedDB, Network).
+- **Automatic Rejection**: You MUST issue a [REJECT] or [REQUEST CHANGES] if required tests are missing, if the developer failed to mock external infrastructure, or if slow integration tests were written instead of isolated unit tests.
 
 ## Evaluation Process
 1. Analyze the `git diff`.

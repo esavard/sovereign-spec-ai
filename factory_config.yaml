@@ -1,5 +1,9 @@
 # factory_config.yaml
 project_name: "SovereignSpecAI"
-brand_emoji: "🤖"
-stages: ["01_icebox", "02_backlog", "03_dev", "04_review", "05_done"]
+stages:
+  - "01_backlog"
+  - "02_ready_for_dev"
+  - "03_ready_for_review"
+  - "04_dev_done"
+  - "05_done"
 default_model: "ollama/qwen2.5-coder:14b-instruct-q4_K_M"
