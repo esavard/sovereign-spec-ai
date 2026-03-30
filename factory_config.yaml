@@ -1,0 +1,9 @@
+# factory_config.yaml
+project_name: "SovereignSpecAI"
+stages:
+  - "01_backlog"
+  - "02_ready_for_dev"
+  - "03_ready_for_review"
+  - "04_dev_done"
+  - "05_done"
+default_model: "ollama/qwen2.5-coder:14b-instruct-q4_K_M"

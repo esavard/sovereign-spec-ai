@@ -1,0 +1,17 @@
+# PyCharm
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.env
+
+# Aider
+.aider*
+
+# Logs
+*.log
+
+# uv
+uv.lock
