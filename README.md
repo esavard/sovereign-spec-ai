@@ -46,6 +46,63 @@ The pipeline is a strict state machine with explicit human-in-the-loop gates.
 | `04_dev_done` | Reviewer agent | Review verdict delivered, awaiting acceptance. |
 | `05_done` | **Human** | Accepted, feature branch merged and closed. |
 
+```mermaid
+flowchart TD
+    BLUEPRINT([Blueprint])
+    BACKLOG[01_backlog]
+    READY[02_ready_for_dev]
+    REVIEW[03_ready_for_review]
+    DONE4[04_dev_done]
+    DONE5[05_done]
+    REWORK["02_ready_for_dev
+    _rework_00.md
+    (branch from original)"]
+
+    A([Architect Agent])
+    H1([Human — Gate 1])
+    D([Developer Agent])
+    R([Reviewer Agent])
+    H2([Human — Gate 2])
+
+    BLUEPRINT -->|sovereign architect| A
+    A -->|generates tasks| BACKLOG
+    BACKLOG -->|sovereign pick| H1
+    H1 -->|promotes| READY
+    READY -->|sovereign run| D
+    D -->|moves on success| REVIEW
+    REVIEW -->|sovereign review| R
+
+    R -->|PASS| DONE4
+    DONE4 -->|sovereign approve| H2
+    H2 -->|merges branch| DONE5
+
+    R -->|REQUEST CHANGES / REJECT| DONE4
+    DONE4 -->|sovereign reject| BACKLOG
+    DONE4 -->|sovereign rework| REWORK
+    REWORK -->|sovereign run\nbranches from original| D
+    REWORK -->|sovereign review| R
+
+    R -->|PASS — rework| DONE4
+    DONE4 -->|"sovereign approve _rework_00.md
+    merges rework branch
+    deletes original branch
+    closes both tickets"| DONE5
+
+    R -->|"FAIL — rework
+    sovereign rework _rework_00.md"| REWORK2["_rework_01.md
+    _rework_02.md …"]
+    REWORK2 -->|sovereign run| D
+
+    style H1 fill:#f5a623,color:#000
+    style H2 fill:#f5a623,color:#000
+    style A fill:#4a90d9,color:#fff
+    style D fill:#4a90d9,color:#fff
+    style R fill:#4a90d9,color:#fff
+    style DONE5 fill:#27ae60,color:#fff
+    style REWORK fill:#8e44ad,color:#fff
+    style REWORK2 fill:#8e44ad,color:#fff
+```
+
 ## Getting Started
 
 ### Prerequisites
@@ -55,35 +112,42 @@ The pipeline is a strict state machine with explicit human-in-the-loop gates.
 
 ### Installation
 
-#### 1. Initialize your project repository
-```bash
-mkdir my-project
-cd my-project
-git init .
-```
-
-#### 2. Clone SovereignSpecAI as a sidecar
-```bash
-git clone https://github.com/esavard/sovereign-spec-ai.git
-cd sovereign-spec-ai
-```
-
-#### 3. Install uv (if not already installed)
+#### 1. Install uv (if not already installed)
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-#### 4. Install dependencies and register the CLI
+#### 2. Initialize your project repository
 ```bash
+mkdir my-project
+cd my-project
+git init .
+git commit --allow-empty -m "chore: initial commit"
+```
+
+#### 3. Clone SovereignSpecAI as a sidecar inside your project
+```bash
+git clone https://github.com/esavard/sovereign-spec-ai.git
+cd sovereign-spec-ai
 uv sync
 ```
-This installs all dependencies and registers the `sovereign` command in the virtual environment.
+`uv sync` installs all dependencies and registers the `sovereign` command in the virtual environment.
 
-#### 5. Initialize the Kanban folder structure
+#### 4. Initialize the Kanban folder structure
 ```bash
 uv run sovereign init
 ```
-This creates the `specs/` stage directories, a default `architecture/project_blueprint.md`, configures `.gitignore` and `.aiderignore`, and automatically creates an initial commit if the repository has none yet.
+This creates the `specs/` stage directories, a default `architecture/project_blueprint.md`, configures `.gitignore` and `.aiderignore` (including hiding the `sovereign-spec-ai/` sidecar from the parent repo's git status), and creates an initial commit if the repository has none yet.
+
+#### 5. Customize the blueprint and commit it
+Edit `architecture/project_blueprint.md` to describe your project. Fill in the Project Name, Domain Description, Technical Stack, Technical Constraints, and the Mermaid domain model. Take special care to define precisely your features in the diagram — the Architect agent uses it as the sole source of truth for scoping tasks. See the [architecture-example](architecture-example/project_blueprint.md) directory for a concrete reference.
+
+Once satisfied, commit the blueprint:
+```bash
+cd ..   # back to my-project root
+git add architecture/project_blueprint.md
+git commit -m "docs: define project blueprint"
+```
 
 ## CLI Reference
 
@@ -93,12 +157,14 @@ All commands are run with `uv run sovereign <command>`.
 |---|---|---|
 | `init` | — | Initialize the Kanban folder structure, default blueprint, `.gitignore`, and `.aiderignore` in the parent repository. Run once after cloning. |
 | `architect` | `[--blueprint FILE]` | Run the Architect agent against a blueprint. Decomposes it into atomic, dependency-ordered tasks written to `01_backlog/` with a numeric priority prefix (`01_`, `02_`, …). Defaults to `architecture/project_blueprint.md`. |
-| `list` | `[stage]` | List spec files in a Kanban stage. Defaults to `01_backlog`. Valid stages: `01_backlog`, `02_ready_for_dev`, `03_ready_for_review`, `04_dev_done`, `05_done`. |
+| `kanban` | — | Display all Kanban columns and their tasks at a glance. |
+| `list` | `[stage]` | List spec files in a single Kanban stage. Defaults to `01_backlog`. Valid stages: `01_backlog`, `02_ready_for_dev`, `03_ready_for_review`, `04_dev_done`, `05_done`. |
 | `pick` | `<filename>` | **[Human gate 1]** Promote a task from `01_backlog` to `02_ready_for_dev`. |
 | `run` | `<filename>` | Trigger the Developer agent on a task in `02_ready_for_dev`. Creates a git branch, runs `aider`, and moves the task to `03_ready_for_review` on success. |
 | `review` | `<filename> [--no-agent]` | Trigger the Reviewer agent on a task in `03_ready_for_review`. Moves to `04_dev_done` on completion. Pass `--no-agent` to show the diff only. |
-| `approve` | `<filename>` | **[Human gate 2]** Merge the feature branch and move the task to `05_done`. |
-| `reject` | `<filename> [--reason TEXT]` | Send a task from `03_ready_for_review` back to `01_backlog`. Appends feedback to the spec if `--reason` is provided. |
+| `rework` | `<filename>` | Generate a focused rework ticket from a rejected task's Review Report. Drops `<base>_rework.md` directly into `02_ready_for_dev`. |
+| `approve` | `<filename>` | **[Human gate 2]** Merge the feature branch and move the task to `05_done`. If approving a `_rework.md` ticket, also closes the original task. |
+| `reject` | `<filename> [--reason TEXT]` | Send a task from `03_ready_for_review` or `04_dev_done` back to `01_backlog`. Appends feedback to the spec if `--reason` is provided. |
 
 ### Examples
 
@@ -111,8 +177,9 @@ uv run sovereign architect
 uv run sovereign architect --blueprint architecture/my_other_blueprint.md
 
 # 3. [Human gate 1] Review generated tasks and promote one for development
-uv run sovereign list 01_backlog
-uv run sovereign pick 01_setup_database.md   # moves to 02_ready_for_dev
+uv run sovereign kanban                      # overview of all columns
+uv run sovereign list 01_backlog             # single column view
+uv run sovereign pick 01_setup_database.md  # moves to 02_ready_for_dev
 
 # 4. Trigger the Developer agent
 uv run sovereign run 01_setup_database.md    # auto-moves to 03_ready_for_review
@@ -126,6 +193,12 @@ uv run sovereign approve 01_setup_database.md  # merges branch, moves to 05_done
 
 # Or reject back to backlog with feedback
 uv run sovereign reject 01_setup_database.md --reason "Missing error handling in repository layer."
+
+# Rejection path — generate a focused rework ticket instead of recycling the full task
+uv run sovereign rework 01_setup_database.md         # creates 01_setup_database_rework.md in 02_ready_for_dev
+uv run sovereign run 01_setup_database_rework.md     # dev fixes ONLY the scoped issue
+uv run sovereign review 01_setup_database_rework.md  # reviewer scopes to rework spec
+uv run sovereign approve 01_setup_database_rework.md # merges rework + closes original task
 ```
 
 ## Why Sovereign?

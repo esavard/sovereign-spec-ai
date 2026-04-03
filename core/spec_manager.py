@@ -19,13 +19,52 @@ STAGES: list[str] = [
 _DEFAULT_BLUEPRINT = """\
 # Project Blueprint
 
+## Project Name
+(the name of the project, e.g. "MyTaskApp")
+
+## Domain Description
+(2-3 sentences: what does this system do? Who uses it? What problem does it solve?)
+
 ## Technical Stack
-- (define your stack here)
+- (framework / runtime)
+- (database / persistence)
+- (test runner)
+
+## Technical Constraints
+- (what NOT to do — e.g. "no backend", "no SSR", "mock IndexedDB in tests")
+
+## Node Legend
+All Mermaid nodes MUST use these prefixes so the Architect agent can categorize them unambiguously:
+
+| Prefix | DDD Type           | Example                  |
+|--------|--------------------|--------------------------|
+| `C_`   | Command            | `C_AddTask`              |
+| `A_`   | Aggregate          | `A_Task`                 |
+| `E_`   | Entity             | `E_TaskEntry`            |
+| `DE_`  | Domain Event       | `DE_TaskAdded`           |
+| `P_`   | Policy / Saga      | `P_PersistToIndexedDB`   |
+| `R_`   | Repository         | `R_TaskRepo`             |
+| `RM_`  | Read Model / Store | `RM_TaskList`            |
+| `DB_`  | Infrastructure     | `DB_Dexie`               |
 
 ## Domain Model
 ```mermaid
 graph TD
-    A --> B
+    %% Commands
+    C_Example[Command: Example] --> A_Example[Aggregate: Example]
+
+    %% Domain Events
+    A_Example -->|Publishes| DE_ExampleDone[Event: ExampleDone]
+
+    %% Policies
+    DE_ExampleDone --> P_Example[Policy: Example]
+    P_Example -->|Calls| R_Example[Repository: Example]
+
+    %% Infrastructure
+    R_Example --> DB_Example[Infrastructure: Example DB]
+
+    %% Read Models
+    DE_ExampleDone --> RM_Example[ReadModel: ExampleStore]
 ```
 """
 
@@ -50,37 +89,62 @@ def init_env() -> None:
     tool_dir_name = os.path.basename(TOOL_DIR)
 
     gitignore_path = os.path.join(PROJECT_ROOT, ".gitignore")
-    entry = f"\n# SovereignSpecAI Tooling\n{tool_dir_name}/\n"
+    entry = f"\n# SovereignSpecAI Tooling\n{tool_dir_name}/\n.aider*\n"
     if os.path.exists(gitignore_path):
         with open(gitignore_path) as f:
             content = f.read()
+        additions = []
         if f"{tool_dir_name}/" not in content:
+            additions.append(f"\n# SovereignSpecAI Tooling\n{tool_dir_name}/\n")
+        if ".aider*" not in content:
+            additions.append(".aider*\n")
+        if additions:
             with open(gitignore_path, "a") as f:
-                f.write(entry)
+                f.writelines(additions)
     else:
         with open(gitignore_path, "w") as f:
             f.write(entry)
 
     aiderignore_path = os.path.join(PROJECT_ROOT, ".aiderignore")
-    if not os.path.exists(aiderignore_path):
+    aiderignore_entries = [f"/{tool_dir_name}/\n", "architecture*/\n", "specs/\n"]
+    if os.path.exists(aiderignore_path):
+        with open(aiderignore_path) as f:
+            existing = f.read()
+        missing = [e for e in aiderignore_entries if e.strip() not in existing]
+        if missing:
+            with open(aiderignore_path, "a") as f:
+                f.writelines(missing)
+    else:
         with open(aiderignore_path, "w") as f:
-            f.write(f"/{tool_dir_name}/\n")
-            f.write("architecture*/\n")
+            f.writelines(aiderignore_entries)
 
-    _ensure_initial_commit()
-
-
-def _ensure_initial_commit() -> None:
-    """Create an initial commit if the repository has no commits yet."""
+    # Remove tool dir from git index if it was previously tracked.
+    # .gitignore only prevents future tracking; already-tracked entries must be
+    # explicitly removed from the index (--cached leaves the files on disk).
     repo = Repo(PROJECT_ROOT)
     try:
-        repo.active_branch  # raises TypeError on empty repo
-        return  # already has commits, nothing to do
-    except TypeError:
+        repo.git.rm("--cached", "--ignore-unmatch", "-r", tool_dir_name)
+    except Exception:
         pass
 
+    _commit_init_files(repo)
+
+
+def _commit_init_files(repo: Repo) -> None:
+    """Stage and commit all sovereign init artefacts.
+
+    Runs on every `sovereign init` so that newly created files (.gitignore,
+    architecture/, specs/) are committed even when the repository already has
+    prior commits (e.g. an empty initial commit).
+    """
     repo.git.add(A=True)
-    repo.index.commit("chore: initial project structure [sovereign init]")
+    try:
+        # On a repo with commits, skip if nothing changed.
+        if not repo.index.diff("HEAD") and not repo.untracked_files:
+            return
+    except Exception:
+        pass  # zero-commit repo has no HEAD — always commit
+    repo.index.commit("chore: sovereign init [sovereign]")
 
 
 def list_specs(stage: str) -> list[str]:

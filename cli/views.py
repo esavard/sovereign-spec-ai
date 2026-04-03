@@ -16,6 +16,16 @@ def print_spec_list(stage: str, files: list[str]) -> None:
     console.print(table)
 
 
+def print_kanban(stages: list[tuple[str, list[str]]]) -> None:
+    for stage, files in stages:
+        console.print(f"\n[bold yellow]{stage}[/bold yellow]")
+        if files:
+            for f in files:
+                console.print(f"  [cyan]{f}[/cyan]")
+        else:
+            console.print("  [dim](empty)[/dim]")
+
+
 def print_success(message: str) -> None:
     console.print(f"[green]{message}[/green]")
 
