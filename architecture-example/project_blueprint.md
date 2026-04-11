@@ -11,6 +11,14 @@ A browser-only task manager that lets users add, toggle, and delete tasks. All s
 - Dexie.js (IndexedDB wrapper)
 - Vitest (test runner)
 
+<!--
+`sovereign scaffold` will detect SvelteKit and generate:
+  - src/lib/{domain,events,commands,policies,stores,db}/, src/routes/, tests/
+  - package.json, svelte.config.js, vite.config.ts, tsconfig.json
+  - .gitignore (Node + Svelte sections)
+No backend detected → single-stack, flat structure (no frontend/ subdirectory).
+-->
+
 ## Technical Constraints
 - Frontend only — no server-side rendering, no API routes, no backend.
 - Persistence is handled exclusively through IndexedDB via Dexie.js.
@@ -44,6 +52,7 @@ All Mermaid nodes use these prefixes so the Architect agent can categorize them 
 | `R_`   | Repository         | `R_TaskRepo`             |
 | `RM_`  | Read Model / Store | `RM_TaskList`            |
 | `DB_`  | Infrastructure     | `DB_Dexie`               |
+| `UI_`  | UI Component       | `UI_TaskManagerPage`     |
 | `UI_`  | UI Component / Page| `UI_TaskManagerPage`     |
 
 ## Domain Model

@@ -64,7 +64,8 @@ flowchart TD
     R([Reviewer Agent])
     H2([Human — Gate 2])
 
-    BLUEPRINT -->|sovereign architect| A
+    BLUEPRINT -->|sovereign scaffold| SCAFFOLD[Project Structure]
+    SCAFFOLD -->|sovereign architect| A
     A -->|generates tasks| BACKLOG
     BACKLOG -->|sovereign pick| H1
     H1 -->|promotes| READY
@@ -98,6 +99,7 @@ flowchart TD
     style A fill:#4a90d9,color:#fff
     style D fill:#4a90d9,color:#fff
     style R fill:#4a90d9,color:#fff
+    style SCAFFOLD fill:#27ae60,color:#fff
     style DONE5 fill:#27ae60,color:#fff
     style REWORK fill:#8e44ad,color:#fff
     style REWORK2 fill:#8e44ad,color:#fff
@@ -149,6 +151,12 @@ git add architecture/project_blueprint.md
 git commit -m "docs: define project blueprint"
 ```
 
+#### 6. Scaffold the project structure
+```bash
+uv run sovereign scaffold
+```
+Reads the `Technical Stack` section of your blueprint and deterministically generates the project structure: config files (`package.json`, `go.mod`, `build.gradle.kts`, …), DDD directory layout with `.keep` files, a merged `.gitignore` (preserving any entries added by `sovereign init`), and a root `Makefile` for monorepos. Everything is committed on a `init_project` branch for review. No LLM is involved — the output is fully reproducible.
+
 ## CLI Reference
 
 All commands are run with `uv run sovereign <command>`.
@@ -156,6 +164,7 @@ All commands are run with `uv run sovereign <command>`.
 | Command | Arguments | Description |
 |---|---|---|
 | `init` | — | Initialize the Kanban folder structure, default blueprint, `.gitignore`, and `.aiderignore` in the parent repository. Run once after cloning. |
+| `scaffold` | `[--blueprint FILE]` | Deterministically generate the project structure from the blueprint's `Technical Stack` section. Creates config files, DDD directories, `.gitignore`, and a root `Makefile` (monorepos only). Commits the result on a `init_project` branch. No LLM involved. Run once after filling in the blueprint. |
 | `architect` | `[--blueprint FILE]` | Run the Architect agent against a blueprint. Decomposes it into atomic, dependency-ordered tasks written to `01_backlog/` with a numeric priority prefix (`01_`, `02_`, …). Defaults to `architecture/project_blueprint.md`. |
 | `kanban` | — | Display all Kanban columns and their tasks at a glance. |
 | `list` | `[stage]` | List spec files in a single Kanban stage. Defaults to `01_backlog`. Valid stages: `01_backlog`, `02_ready_for_dev`, `03_ready_for_review`, `04_dev_done`, `05_done`. |
@@ -172,23 +181,27 @@ All commands are run with `uv run sovereign <command>`.
 # 1. Initialize the sidecar in your project (run once)
 uv run sovereign init
 
-# 2. Analyze the blueprint and populate the backlog
+# 2. Fill in architecture/project_blueprint.md, then scaffold the project structure (run once)
+uv run sovereign scaffold
+uv run sovereign scaffold --blueprint architecture/my_other_blueprint.md
+
+# 3. Analyze the blueprint and populate the backlog
 uv run sovereign architect
 uv run sovereign architect --blueprint architecture/my_other_blueprint.md
 
-# 3. [Human gate 1] Review generated tasks and promote one for development
+# 4. [Human gate 1] Review generated tasks and promote one for development
 uv run sovereign kanban                      # overview of all columns
 uv run sovereign list 01_backlog             # single column view
 uv run sovereign pick 01_setup_database.md  # moves to 02_ready_for_dev
 
-# 4. Trigger the Developer agent
+# 5. Trigger the Developer agent
 uv run sovereign run 01_setup_database.md    # auto-moves to 03_ready_for_review
 
-# 5. Trigger the Reviewer agent
+# 6. Trigger the Reviewer agent
 uv run sovereign review 01_setup_database.md           # runs agent, moves to 04_dev_done
 uv run sovereign review 01_setup_database.md --no-agent  # diff only
 
-# 6. [Human gate 2] Accept and merge
+# 7. [Human gate 2] Accept and merge
 uv run sovereign approve 01_setup_database.md  # merges branch, moves to 05_done
 
 # Or reject back to backlog with feedback

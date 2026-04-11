@@ -36,109 +36,6 @@ def _model_manager() -> ModelManager:
     return ModelManager(os.path.join(TOOL_DIR, "factory_config.yaml"))
 
 
-def _extract_blueprint_section(blueprint: str, heading: str) -> str:
-    """Return the text content of a ## heading section from the blueprint."""
-    pattern = rf"^## {re.escape(heading)}\s*\n(.*?)(?=^## |\Z)"
-    m = re.search(pattern, blueprint, re.MULTILINE | re.DOTALL)
-    return m.group(1).strip() if m else ""
-
-
-def _write_init_spec(dest_path: str, blueprint: str) -> None:
-    """Write 00_init_project.md directly from blueprint values, bypassing the model."""
-    project_name = _extract_blueprint_section(blueprint, "Project Name")
-    domain = _extract_blueprint_section(blueprint, "Domain Description")
-    stack = _extract_blueprint_section(blueprint, "Technical Stack")
-    constraints = _extract_blueprint_section(blueprint, "Technical Constraints")
-    structure = _extract_blueprint_section(blueprint, "Project Structure")
-
-    readme_content = f"""\
-# {project_name}
-
-## Domain Description
-{domain}
-
-## Technical Stack
-{stack}
-
-## Technical Constraints
-{constraints}
-
-## Installation
-
-Install dependencies:
-
-```
-npm install
-```
-
-## Development
-
-Start the development server:
-
-```
-npm run dev
-```
-
-## Testing
-
-Run the test suite:
-
-```
-npm test
-```
-"""
-
-    structure_section = f"\n## Project Structure\n{structure}\n" if structure else ""
-
-    content = f"""\
-# Initialize project
-
-## Context
-Base project structure.
-
-## Project Name
-{project_name}
-
-## Domain Description
-{domain}
-
-## Technical Stack
-{stack}
-
-## Technical Constraints
-{constraints}
-{structure_section}
-## README
-The README.md has already been created with the correct project name and domain description.
-Do NOT overwrite or recreate it.
-
-## Acceptance Criteria
-- Scaffold the project named `{project_name}` using the Technical Stack defined above
-  (create the appropriate package manifest with the correct name, dependencies, and scripts
-  including a `test` script). Runtime libraries MUST go in runtime dependencies, not
-  development-only dependencies.
-- Create the directory structure defined in Project Structure above. Each directory MUST
-  contain a single empty `.keep` file (zero bytes, no content) so that the directory is
-  tracked by git. Subsequent tasks will add real files alongside or instead of it.
-- Create the build and test runner configuration file(s) required by the Technical Stack.
-  Where the framework supports it, combine build and test configuration into a single file.
-  Do NOT create redundant or overlapping config files for the same tool.
-- Create a `.gitignore` appropriate for the stack above, covering build outputs, dependency
-  directories, environment files, and IDE folders.
-- Respect all Technical Constraints listed above.
-- No tests required for this task.
-
-## Branch Name
-init_project
-"""
-    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-    with open(dest_path, "w") as f:
-        f.write(content)
-
-    readme_path = os.path.join(PROJECT_ROOT, "README.md")
-    if not os.path.exists(readme_path):
-        with open(readme_path, "w") as f:
-            f.write(readme_content)
 
 
 
@@ -287,10 +184,10 @@ def cmd_architect(args: argparse.Namespace) -> None:
 
     console.print(f"[green]Plan received:[/green] {len(task_plan)} task(s) to generate.")
 
-    # Safety net: re-index tasks sequentially to eliminate any duplicate indices,
-    # then enforce the two-digit prefix on every filename.
+    # Safety net: re-index tasks sequentially starting at 01.
+    # Enforce the two-digit prefix on every filename.
     task_plan.sort(key=lambda t: t.get("index", 0))
-    for seq, task in enumerate(task_plan):
+    for seq, task in enumerate(task_plan, start=1):
         task["index"] = seq
         fname = task.get("filename", "task.md")
         # Strip any existing leading digits+underscore, then reapply from seq
@@ -304,19 +201,10 @@ def cmd_architect(args: argparse.Namespace) -> None:
     with open(task_agent_path) as f:
         task_role_prompt = f.read()
 
-    # Always write the init spec first, directly from the blueprint.
-    init_spec_path = os.path.join(PROJECT_ROOT, backlog_rel, "00_init_project.md")
-    _write_init_spec(init_spec_path, blueprint_content)
-    print_success("00_init_project.md written from blueprint.")
-
     failed = 0
     for task in sorted(task_plan, key=lambda t: t.get("index", 0)):
         filename = task.get("filename", "")
         title = task.get("title", filename)
-
-        # Skip the init task — already handled above.
-        if task.get("is_init") or filename.startswith("00_"):
-            continue
 
         console.print(f"  Writing [cyan]{filename}[/cyan] — {title}")
 
@@ -615,6 +503,41 @@ def cmd_rework(args: argparse.Namespace) -> None:
     print_success(f"Rework ticket created: {rework_filename} in 02_ready_for_dev.")
 
 
+def cmd_scaffold(args: argparse.Namespace) -> None:
+    """Scaffold the project structure directly from the blueprint. No LLM involved."""
+    from scaffolding.engine import scaffold
+
+    blueprint_path = args.blueprint or os.path.join(ARCH_DIR, "project_blueprint.md")
+    if not os.path.exists(blueprint_path):
+        print_error(
+            f"Blueprint not found: {blueprint_path}\n"
+            "Run `sovereign init` first, then fill in architecture/project_blueprint.md."
+        )
+        return
+
+    with open(blueprint_path) as f:
+        blueprint_content = f.read()
+
+    if "<framework>" in blueprint_content or "(<framework>" in blueprint_content:
+        print_error(
+            "Blueprint has not been filled in yet.\n"
+            "Edit architecture/project_blueprint.md before running scaffold."
+        )
+        return
+
+    create_branch("init_project")
+    console.print("[bold]Scaffolding project from blueprint…[/bold]")
+
+    scaffold(blueprint_content)
+
+    stage_and_commit("chore: scaffold project structure [sovereign]")
+
+    from core.git_utils import merge_and_delete_branch
+    merge_and_delete_branch("init_project")
+
+    print_success("Project scaffolded and merged into [cyan]main[/cyan].")
+
+
 def cmd_approve(args: argparse.Namespace) -> None:
     """Human gate 2 — accept a reviewed task, merge its branch, and close it."""
     filename = args.filename
@@ -670,6 +593,19 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "init", help="Initialize the Kanban structure in the parent repo."
     ).set_defaults(func=cmd_init)
+
+    # scaffold
+    scaffold_parser = subparsers.add_parser(
+        "scaffold",
+        help="Scaffold the project structure from the blueprint. Run once after `init`.",
+    )
+    scaffold_parser.add_argument(
+        "--blueprint",
+        default=None,
+        metavar="FILE",
+        help="Path to the blueprint file (default: architecture/project_blueprint.md).",
+    )
+    scaffold_parser.set_defaults(func=cmd_scaffold)
 
     # architect
     architect_parser = subparsers.add_parser(

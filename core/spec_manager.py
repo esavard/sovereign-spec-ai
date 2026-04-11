@@ -26,9 +26,24 @@ _DEFAULT_BLUEPRINT = """\
 (2-3 sentences: what does this system do? Who uses it? What problem does it solve?)
 
 ## Technical Stack
-- (framework / runtime)
-- (database / persistence)
-- (test runner)
+<!--
+`sovereign scaffold` reads this section to generate your project structure.
+Rules:
+  - Name the framework exactly (e.g. SvelteKit, React, Go, Beego, NestJS, FastAPI, Kotlin)
+  - Specify a version if you need a specific one: "Go 1.22", "SvelteKit 2.x"
+    Otherwise, latest stable is used.
+  - For a full-stack project, list frontend AND backend → generates a monorepo
+    with frontend/ and backend/ subdirectories automatically.
+  - For Android, write "Kotlin (Android native)"
+
+Examples (pick one pattern):
+  - SvelteKit + Vitest                         → single-stack frontend
+  - SvelteKit + Beego (Go backend) + PostgreSQL → monorepo frontend/ + backend/
+  - Kotlin (Android native) + Room + JUnit5     → Android project
+-->
+- (<framework>, e.g. SvelteKit / NestJS / FastAPI / Kotlin Android)
+- (<persistence>, e.g. Dexie.js / PostgreSQL / Room)
+- (<test runner>, e.g. Vitest / pytest / JUnit5)
 
 ## Technical Constraints
 - (what NOT to do — e.g. "no backend", "no SSR", "mock IndexedDB in tests")
@@ -46,6 +61,7 @@ All Mermaid nodes MUST use these prefixes so the Architect agent can categorize 
 | `R_`   | Repository         | `R_TaskRepo`             |
 | `RM_`  | Read Model / Store | `RM_TaskList`            |
 | `DB_`  | Infrastructure     | `DB_Dexie`               |
+| `UI_`  | UI Component       | `UI_TaskManagerPage`     |
 
 ## Domain Model
 ```mermaid

@@ -1,0 +1,18 @@
+# DDD structure for a SvelteKit frontend (single-stack or monorepo frontend/).
+# Mirrors the DDD node prefixes used in blueprints:
+#   A_, E_  → domain/
+#   DE_     → events/
+#   C_      → commands/
+#   P_      → policies/
+#   RM_     → stores/
+#   DB_     → db/
+#   UI_     → routes/
+dirs:
+  - src/lib/domain/
+  - src/lib/events/
+  - src/lib/commands/
+  - src/lib/policies/
+  - src/lib/stores/
+  - src/lib/db/
+  - src/routes/
+  - tests/

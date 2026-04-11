@@ -1,0 +1,6 @@
+# Fallback DDD structure — used when no stack-specific template matches.
+dirs:
+  - domain/
+  - application/
+  - infrastructure/
+  - tests/

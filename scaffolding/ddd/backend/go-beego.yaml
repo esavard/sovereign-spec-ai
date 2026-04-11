@@ -1,0 +1,18 @@
+# DDD structure for a Go + Beego backend (single-stack or monorepo backend/).
+# Beego controllers live in presentation/controllers/,
+# routers in presentation/routers/.
+# Repository interfaces are declared in domain/repositories/,
+# their implementations are in infrastructure/repositories/.
+dirs:
+  - domain/aggregates/
+  - domain/entities/
+  - domain/events/
+  - domain/repositories/
+  - application/commands/
+  - application/policies/
+  - infrastructure/repositories/
+  - infrastructure/migrations/
+  - presentation/controllers/
+  - presentation/routers/
+  - conf/
+  - tests/
