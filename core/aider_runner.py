@@ -10,13 +10,13 @@ def run_aider(
     model: str,
     extra_args: list[str] | None = None,
     cwd: str | None = None,
-) -> int:
+) -> tuple[int, str]:
     command = [
         sys.executable, "-m", "aider",
         "--model", model,
+        "--edit-format", "whole",
         "--message", message,
         "--yes",
-        "--no-auto-commits",
         *(extra_args or []),
     ]
 
@@ -37,12 +37,14 @@ def run_aider(
             cwd=cwd or PROJECT_ROOT,
         )
 
+        lines = []
         for line in process.stdout:
             print(line, end="", flush=True)
+            lines.append(line)
 
         process.wait()
-        return process.returncode
+        return process.returncode, "".join(lines)
 
     except FileNotFoundError as e:
         print(f"\n[ERROR] Failed to start Aider. Is it installed?\nDetails: {e}", flush=True)
-        return 1
+        return 1, ""
