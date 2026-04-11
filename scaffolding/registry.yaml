@@ -1,0 +1,95 @@
+stacks:
+  sveltekit:
+    role: frontend
+    detect:
+      - 'sveltekit'
+      - 'svelte.?kit'
+    templates:
+      - sveltekit
+    ddd: frontend/sveltekit
+    gitignore:
+      - Node
+      - Svelte
+    version_extract:
+      - key: sveltekit_version
+        pattern: 'sveltekit\s+([\d.x]+)'
+        default: "latest"
+      - key: node_version
+        pattern: 'node\s+([\d]+)'
+        default: "22"
+    package_manager:
+      detect:
+        - pnpm
+        - yarn
+        - bun
+      default: npm
+    test_runner:
+      detect:
+        - vitest
+        - jest
+        - playwright
+      default: vitest
+
+  go-beego:
+    role: backend
+    detect:
+      - 'beego'
+      - 'beego.*go'
+      - 'go.*beego'
+    templates:
+      - go-beego
+    ddd: backend/go-beego
+    gitignore:
+      - Go
+    version_extract:
+      - key: go_version
+        pattern: 'go\s+(1\.\d+(?:\.\d+)?)'
+        default: "1.24"
+      - key: beego_version
+        pattern: 'beego\s+([\d.]+)'
+        default: "v2.3.4"
+
+  postgresql:
+    role: database
+    detect:
+      - 'postgresql'
+      - 'postgres(?!ql)'
+      - 'pg\b'
+    templates: []
+    ddd: ""
+    gitignore: []
+    version_extract:
+      - key: postgres_version
+        pattern: 'postgres(?:ql)?\s+([\d]+)'
+        default: "17"
+
+  kotlin-android:
+    role: mobile
+    detect:
+      - 'kotlin.*android'
+      - 'android.*kotlin'
+      - 'android\s+native'
+      - 'kotlin\s+\(android'
+    templates:
+      - kotlin-android
+    ddd: mobile/android-kotlin
+    gitignore:
+      - Android
+      - Kotlin
+    version_extract:
+      - key: kotlin_version
+        pattern: 'kotlin\s+([\d.]+)'
+        default: "2.1.0"
+      - key: compile_sdk
+        pattern: 'api\s+([\d]+)'
+        default: "35"
+      - key: min_sdk
+        pattern: 'min(?:imum)?\s*sdk\s+([\d]+)'
+        default: "26"
+    test_runner:
+      detect:
+        - 'junit5'
+        - 'junit 5'
+        - 'junit4'
+        - 'junit 4'
+      default: junit5

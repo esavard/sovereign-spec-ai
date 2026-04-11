@@ -1,0 +1,23 @@
+# DDD structure for an Android native (Kotlin) project.
+# Android mandates the app/ module structure — this cannot be flattened.
+# Repository interfaces live in domain/repositories/,
+# Room DAOs + DB setup in infrastructure/room/.
+# package_path is substituted at runtime (e.g. com/example/myapp).
+dirs:
+  - app/src/main/kotlin/{{ package_path }}/domain/aggregates/
+  - app/src/main/kotlin/{{ package_path }}/domain/entities/
+  - app/src/main/kotlin/{{ package_path }}/domain/events/
+  - app/src/main/kotlin/{{ package_path }}/domain/repositories/
+  - app/src/main/kotlin/{{ package_path }}/application/commands/
+  - app/src/main/kotlin/{{ package_path }}/application/policies/
+  - app/src/main/kotlin/{{ package_path }}/infrastructure/room/entities/
+  - app/src/main/kotlin/{{ package_path }}/infrastructure/room/daos/
+  - app/src/main/kotlin/{{ package_path }}/infrastructure/room/database/
+  - app/src/main/kotlin/{{ package_path }}/presentation/viewmodels/
+  - app/src/main/kotlin/{{ package_path }}/presentation/fragments/
+  - app/src/main/kotlin/{{ package_path }}/presentation/activities/
+  - app/src/main/res/layout/
+  - app/src/main/res/values/
+  - app/src/main/res/drawable/
+  - app/src/test/kotlin/{{ package_path }}/
+  - app/src/androidTest/kotlin/{{ package_path }}/

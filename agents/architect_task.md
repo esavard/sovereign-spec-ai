@@ -33,7 +33,7 @@ Rules:
 1. **Context**: One sentence naming the Mermaid node and listing direct dependency filenames. No template boilerplate.
 2. **Acceptance Criteria**: Bullet list (`- ` prefix on every item). The final bullet MUST be the required test criterion (see below).
 3. **Pre-flight check** (internal — do NOT include in output): Before writing `## Branch Name`, answer these three questions silently:
-   - Q1: What is this task's type? (Entity / Aggregate / Domain Event / Command / Policy / Repository / Read Model / Store / DB / Init / UI)
+   - Q1: What is this task's type? (Entity / Aggregate / Domain Event / Command / Policy / Repository / Read Model / Store / DB / UI)
    - Q2: What is the verbatim required test criterion for that type? (look it up in the Testing Requirements table)
    - Q3: Is that exact criterion the last bullet in the Acceptance Criteria above? If NO — insert it now before continuing.
 4. **Branch Name**: Slugified title without the number prefix.
@@ -83,7 +83,6 @@ The final Acceptance Criterion of every task MUST be the bullet below. Copy it v
 | Read Model / Store | `Standard unit tests using the project's test runner (named in the Technical Stack): feed domain events into the store, then assert the resulting in-memory state is correct. No repository, no DB.` |
 | UI Component / Page | `Standard unit tests using the project's test runner (named in the Technical Stack): render the component with mocked commands and a mocked read model store, assert the UI reflects domain state and dispatches the correct command on each user interaction.` |
 | DB / Infrastructure | `No tests required for this task.` |
-| Init / Boilerplate | `No tests required for this task.` |
 
 **PER-TASK RULE — NO EXCEPTIONS**: The test criterion is required for EACH task individually. It does NOT matter that a sibling task of the same type already includes it. Every Domain Event task must independently include the BDD criterion. Every Command task must independently include its BDD criterion. Never substitute `No tests required` for a task type that requires tests — if you are uncertain about the type, look up the table above.
 

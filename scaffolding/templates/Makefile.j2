@@ -1,0 +1,47 @@
+.PHONY: dev test build lint
+
+## Start all development servers in parallel
+dev:
+{% if has_frontend %}
+	@(cd frontend && {{ frontend_pm }} run dev) &
+{% endif %}
+{% if has_backend %}
+	@(cd backend && go run main.go) &
+{% endif %}
+{% if has_mobile %}
+	@echo "Open Android Studio to run the mobile app."
+{% endif %}
+	@wait
+
+## Run all test suites
+test:
+{% if has_frontend %}
+	cd frontend && {{ frontend_pm }} test
+{% endif %}
+{% if has_backend %}
+	cd backend && go test ./...
+{% endif %}
+{% if has_mobile %}
+	cd app && ./gradlew test
+{% endif %}
+
+## Build all artefacts
+build:
+{% if has_frontend %}
+	cd frontend && {{ frontend_pm }} run build
+{% endif %}
+{% if has_backend %}
+	cd backend && go build -o ./bin/server .
+{% endif %}
+{% if has_mobile %}
+	./gradlew assembleRelease
+{% endif %}
+
+## Run all linters
+lint:
+{% if has_frontend %}
+	cd frontend && {{ frontend_pm }} run lint
+{% endif %}
+{% if has_backend %}
+	cd backend && go vet ./...
+{% endif %}
