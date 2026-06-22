@@ -33,8 +33,13 @@ class ModelManager:
 
         If a different model is currently loaded, it is unloaded first to free
         VRAM before the target model is pulled into memory.
+
+        No-op for non-Ollama models (e.g. "anthropic/claude-sonnet-4-6"), which
+        are served remotely and have no local VRAM to manage.
         """
         target = self.get_model_for_role(role)
+        if not target.startswith("ollama/"):
+            return
         # Strip the "ollama/" prefix used by aider — Ollama's own API uses bare names.
         target_bare = target.removeprefix("ollama/")
 

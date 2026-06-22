@@ -157,6 +157,29 @@ uv run sovereign scaffold
 ```
 Reads the `Technical Stack` section of your blueprint and deterministically generates the project structure: config files (`package.json`, `go.mod`, `build.gradle.kts`, …), DDD directory layout with `.keep` files, a merged `.gitignore` (preserving any entries added by `sovereign init`), and a root `Makefile` for monorepos. Everything is committed on a `init_project` branch for review. No LLM is involved — the output is fully reproducible.
 
+## Model Configuration
+
+Every agent role (`architect`, `developer`, `reviewer`) reads its model from `factory_config.yaml` (`default_model`, with optional per-role `model_overrides`). By default every role runs against a local Ollama model — nothing leaves your machine.
+
+### Optional: connecting a role to the Claude API
+
+You can point any single role at an Anthropic Claude model instead of a local one — for example to validate a local model's review verdicts against Claude, or to benchmark how a local model's implementation compares to Claude's on the same spec. This is opt-in per role; roles left on `ollama/...` stay fully local.
+
+1. Get an API key from the [Anthropic Console](https://console.anthropic.com/) and export it in the shell that runs `sovereign`:
+   ```bash
+   export ANTHROPIC_API_KEY="sk-ant-..."
+   ```
+2. In `factory_config.yaml`, set the role's model to `anthropic/<model-id>` (e.g. `anthropic/claude-sonnet-4-6`, `anthropic/claude-opus-4-8`):
+   ```yaml
+   model_overrides:
+     architect: "ollama/devstral-small-2:24b-instruct-2512-q4_K_M"
+     developer: "ollama/qwen2.5-coder:32b-instruct-q3_K_M"
+     reviewer:  "anthropic/claude-sonnet-4-6"   # validate the local developer's diffs against Claude
+   ```
+3. Run the pipeline as usual (`sovereign run`, `sovereign review`, …). Roles on an `anthropic/...` model skip the local VRAM load/unload step and call the Claude API directly; roles on `ollama/...` are unaffected.
+
+Note: any role pointed at `anthropic/...` sends that role's prompts and code context to Anthropic's API — the "Why Sovereign" local-first guarantee below only holds for roles still on `ollama/...`.
+
 ## CLI Reference
 
 All commands are run with `uv run sovereign <command>`.

@@ -18,8 +18,8 @@ from core.git_utils import (
     slugify,
     stage_and_commit,
 )
+from core.llm_client import chat
 from core.model_manager import ModelManager
-from core.ollama_client import chat
 from core.spec_manager import (
     ARCH_DIR,
     SPECS_DIR,
@@ -160,10 +160,10 @@ def cmd_architect(args: argparse.Namespace) -> None:
 
     mm = _model_manager()
     mm.ensure_model_loaded("architect")
-    ollama_model = mm.get_model_for_role("architect").removeprefix("ollama/")
+    architect_model = mm.get_model_for_role("architect")
 
     try:
-        raw_plan = chat(ollama_model, plan_system_prompt, f"BLUEPRINT:\n{blueprint_content}")
+        raw_plan = chat(architect_model, plan_system_prompt, f"BLUEPRINT:\n{blueprint_content}")
     except RuntimeError as e:
         print_error(str(e))
         return
@@ -214,7 +214,7 @@ def cmd_architect(args: argparse.Namespace) -> None:
         )
 
         try:
-            spec_content = chat(ollama_model, task_role_prompt, user_message)
+            spec_content = chat(architect_model, task_role_prompt, user_message)
         except RuntimeError as e:
             print_error(f"Failed to generate {filename}: {e}")
             failed += 1
@@ -377,7 +377,7 @@ def cmd_review(args: argparse.Namespace) -> None:
 
     mm = _model_manager()
     mm.ensure_model_loaded("reviewer")
-    ollama_model = mm.get_model_for_role("reviewer").removeprefix("ollama/")
+    reviewer_model = mm.get_model_for_role("reviewer")
 
     agent_path = os.path.join(TOOL_DIR, "agents", "reviewer.md")
     with open(agent_path) as f:
@@ -414,7 +414,7 @@ def cmd_review(args: argparse.Namespace) -> None:
         )
 
     try:
-        output = chat(ollama_model, role_prompt, user_msg)
+        output = chat(reviewer_model, role_prompt, user_msg)
     except RuntimeError as e:
         print_error(str(e))
         return
@@ -473,7 +473,7 @@ def cmd_rework(args: argparse.Namespace) -> None:
 
     mm = _model_manager()
     mm.ensure_model_loaded("architect")
-    ollama_model = mm.get_model_for_role("architect").removeprefix("ollama/")
+    architect_model = mm.get_model_for_role("architect")
 
     blueprint_path = os.path.join(ARCH_DIR, "project_blueprint.md")
     blueprint_content = ""
@@ -489,7 +489,7 @@ def cmd_rework(args: argparse.Namespace) -> None:
             f"{blueprint_content}"
         )
     try:
-        rework_content = chat(ollama_model, system_prompt, user_message)
+        rework_content = chat(architect_model, system_prompt, user_message)
     except RuntimeError as e:
         print_error(str(e))
         return
