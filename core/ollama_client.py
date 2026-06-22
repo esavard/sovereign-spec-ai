@@ -25,6 +25,14 @@ def chat(
             {"role": "user", "content": user_message},
         ],
         "stream": True,
+        # Ollama silently truncates the response once total tokens (prompt +
+        # generated output) hit num_ctx, producing invalid JSON with no error
+        # from Ollama itself (confirmed via done_reason: "length" on the raw
+        # API response). The architect_plan.md system prompt alone is ~3.4k
+        # tokens, so num_ctx must comfortably exceed prompt + full output size,
+        # not just the output. num_predict=-1 means "generate until done,
+        # bounded only by num_ctx" (no separate output cap).
+        "options": {"num_ctx": 6144, "num_predict": -1},
     }).encode()
 
     req = urllib.request.Request(

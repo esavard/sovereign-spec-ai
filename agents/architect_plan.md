@@ -71,7 +71,7 @@ Blueprints use standard prefixes. Use them to categorize each node into the corr
 - **Aggregate ≠ Entity**: an `A_` node and an `E_` node are never the same task even if they are closely related in the domain model.
 
 ## Example output (follow this pattern exactly)
-Note how: index starts at 1 (no init task); ALL events (indices 5–6) come before ALL commands (indices 7–8); the Aggregate (index 3) and Entity (index 4) are SEPARATE tasks; the UI task (index 9) is always last. This is mandatory.
+Note how: index starts at 1 (no init task); ALL events (indices 5–6) come before ALL commands (indices 7–8); the Aggregate (index 3) and Entity (index 4) are SEPARATE tasks; the Policy (index 9) and Read Model (index 10) come AFTER every Command, never before; the UI task (index 11) is always last. This full 8-group sequence is mandatory — every group must appear in this relative order even when a real blueprint has more nodes per group.
 
 [
   {"index": 1, "filename": "01_setup_database.md", "title": "Setup Dexie database", "context": "Mermaid node: DB_Dexie — no dependencies. Schema only, no repository.", "branch": "setup_database"},
@@ -82,5 +82,15 @@ Note how: index starts at 1 (no init task); ALL events (indices 5–6) come befo
   {"index": 6, "filename": "06_task_toggled_event.md", "title": "Implement TaskToggled event", "context": "Mermaid node: DE_TaskToggled — depends on 03_task_aggregate.md, 04_task_entity.md. Event data class only.", "branch": "task_toggled_event"},
   {"index": 7, "filename": "07_add_task_command.md", "title": "Implement AddTask command", "context": "Mermaid node: C_AddTask — depends on 03_task_aggregate.md, 05_task_added_event.md.", "branch": "add_task_command"},
   {"index": 8, "filename": "08_toggle_task_command.md", "title": "Implement ToggleTask command", "context": "Mermaid node: C_ToggleTask — depends on 03_task_aggregate.md, 06_task_toggled_event.md.", "branch": "toggle_task_command"},
-  {"index": 9, "filename": "09_task_manager_ui.md", "title": "Implement TaskManager UI", "context": "UI component — no Mermaid node (implicit). Depends on all Command tasks and the Read Model task. Wires user interactions to commands and renders read model state using the frontend framework.", "branch": "task_manager_ui"}
+  {"index": 9, "filename": "09_persist_policy.md", "title": "Implement PersistToIndexedDB policy", "context": "Mermaid node: P_Persist — depends on 02_task_repository.md, 05_task_added_event.md, 06_task_toggled_event.md. Subscribes to Event tasks only, calls the Repository task. Comes AFTER all commands because Policies are Group 6.", "branch": "persist_policy"},
+  {"index": 10, "filename": "10_task_list_store.md", "title": "Implement TaskListStore read model", "context": "Mermaid node: RM_TaskList — depends on 05_task_added_event.md, 06_task_toggled_event.md. Subscribes to Event tasks only, maintains in-memory state. Comes AFTER all commands and the Policy because Read Models are Group 7.", "branch": "task_list_store"},
+  {"index": 11, "filename": "11_task_manager_ui.md", "title": "Implement TaskManager UI", "context": "UI component — no Mermaid node (implicit). Depends on all Command tasks and the Read Model task. Wires user interactions to commands and renders read model state using the frontend framework.", "branch": "task_manager_ui"}
 ]
+
+## Self-Check Before Output (MANDATORY — run this after drafting indices, before emitting JSON)
+Verify every one of these. If any check fails, re-assign indices and re-verify — do not emit JSON until all pass:
+1. Every Domain Event index is lower than every Command index.
+2. Every Command index is lower than every Policy index AND lower than every Read Model index. (This is the check that is most often violated — Commands are Group 5, Policies are Group 6, Read Models are Group 7. A Policy or Read Model must NEVER have a lower index than any Command, even though Policies and Read Models depend on Events, not Commands.)
+3. Every Policy index and every Read Model index is lower than the UI task's index.
+4. The UI task has the single highest index in the entire array.
+5. Indices form a contiguous sequence starting at 1 with no duplicates and no gaps.

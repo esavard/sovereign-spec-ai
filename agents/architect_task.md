@@ -36,6 +36,8 @@ Rules:
    - Q1: What is this task's type? (Entity / Aggregate / Domain Event / Command / Policy / Repository / Read Model / Store / DB / UI)
    - Q2: What is the verbatim required test criterion for that type? (look it up in the Testing Requirements table)
    - Q3: Is that exact criterion the last bullet in the Acceptance Criteria above? If NO — insert it now before continuing.
+   - Q4: Does the response end with a `## Branch Name` heading followed by the slugified branch name on its own line? This section is never optional, regardless of task type — if NO, add it now before stopping.
+   - Q5: Is this task's type Repository? If NO, scan every bullet for Repository-exclusive language — "standalone class in its own dedicated source file", "compose the DB instance", "never extend the DB driver class", or any rewording of those structural criteria. That language belongs ONLY to Repository tasks. If found in a non-Repository task — delete those bullets now, before continuing.
 4. **Branch Name**: Slugified title without the number prefix.
 
 ## Scope Boundary Rules (ENFORCE STRICTLY)
@@ -88,6 +90,7 @@ The final Acceptance Criterion of every task MUST be the bullet below. Copy it v
 
 ## Acceptance Criteria Writing Rules
 - Describe **what** to build, never **how**. Do NOT specify property names, method signatures, file paths, class names, or code. Those are implementation decisions for the Developer agent.
+- **Repository-exclusive language — NEVER leaks to other types**: the structural criteria "Implement ... as a standalone class in its own dedicated source file" and "must compose the DB instance ... never extend the DB driver class" (and the Mocking hint) belong ONLY to Repository tasks. This applies to every other task type without exception — Entity, Aggregate, Domain Event, Command, Policy, Read Model/Store, and UI must never contain this language or any rephrasing of it ("its own file", "separate class", "compose the repository/store instance", etc.). If you find yourself writing a criterion about file layout, class structure, or "never extend X", stop — that is Repository boilerplate bleeding into the wrong task type. Describe domain behaviour instead.
 - Each criterion MUST be a bullet starting with `- `. Never write a criterion as a bare paragraph.
 - **The final criterion MUST always be present.** If you are about to finish the spec without it, add it before the Branch Name.
 - **Entity/Aggregate**: describe domain behaviours only — no property types, no method names, no field names.
@@ -98,8 +101,8 @@ The final Acceptance Criterion of every task MUST be the bullet below. Copy it v
   - `- The repository must compose the DB instance (constructor injection or module import) — never extend the DB driver class.`
   - Add a **Mocking hint** criterion immediately before the test criterion. Derive it from the Technical Stack in the blueprint: name the exact module to mock and the native mock API. Example for Dexie.js + Vitest: `- Mocking hint: use vi.mock() to replace the Dexie module; inject a plain stub with vi.fn() methods as the db — never instantiate a real Dexie instance inside any test.` Adapt for any other stack (e.g. MockK for Kotlin, unittest.mock for Python).
 - **Policy**: the policy subscribes to events and calls the repository. The context MUST list `02_task_repository.md` (or the repo task) as a dependency if the policy calls it.
-- **Read Model / Store**: uses the "Standard unit tests" criterion, NOT the BDD criterion. It is a Read Model, not a Domain Event.
-- **UI Component / Page**: describe user-visible behaviours (display, interactions, feedback). Reference Commands and Read Models by domain name only. Do NOT mention implementation details (file paths, component names, CSS). Uses the "Standard unit tests" criterion.
+- **Read Model / Store**: uses the "Standard unit tests" criterion, NOT the BDD criterion. It is a Read Model, not a Domain Event. NEVER include the Repository's structural criteria here ("implement as a standalone class...", "compose the DB instance", "never extend the driver class") — those rules belong exclusively to Repository tasks. A Read Model only subscribes to Event tasks and holds in-memory state; it must not reference the Repository or the DB at all, even in passing.
+- **UI Component / Page**: describe user-visible behaviours (display, interactions, feedback). Reference Commands and Read Models by domain name only. Do NOT mention implementation details (file paths, component names, CSS). Uses the "Standard unit tests" criterion as its MANDATORY final bullet — being the last task in the plan does NOT exempt it from the test criterion. Never end a UI spec without this bullet.
 - Do NOT use Mermaid node prefixes (e.g. `DE_TaskAdded`, `R_TaskRepo`, `C_AddTask`) anywhere in acceptance criteria. Use clean domain names (e.g. `TaskAdded`, `TaskRepository`, `AddTask`).
 - **Forward dependency rule**: NEVER reference a domain concept (event, command, aggregate, policy, store) that belongs to a task with a HIGHER index number. The criteria may only reference what has already been defined in lower-indexed tasks.
 

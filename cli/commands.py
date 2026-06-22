@@ -220,9 +220,17 @@ def cmd_architect(args: argparse.Namespace) -> None:
             failed += 1
             continue
 
+        spec_content = spec_content.strip()
+        # The model sometimes stops generating right after the last Acceptance
+        # Criteria bullet and never reaches the mandatory trailing section. The
+        # branch name is already known from the Phase 1 plan, so append it
+        # deterministically instead of relying on the model to reproduce it.
+        if "## Branch Name" not in spec_content:
+            spec_content += f"\n\n## Branch Name\n{task.get('branch', '')}"
+
         dest = os.path.join(PROJECT_ROOT, backlog_rel, filename)
         with open(dest, "w") as f:
-            f.write(spec_content.strip() + "\n")
+            f.write(spec_content + "\n")
 
     if failed == 0:
         print_success(f"Architect complete. {len(task_plan)} task(s) created in 01_backlog.")
