@@ -161,6 +161,23 @@ Reads the `Technical Stack` section of your blueprint and deterministically gene
 
 Every agent role (`architect`, `developer`, `reviewer`) reads its model from `factory_config.yaml` (`default_model`, with optional per-role `model_overrides`). By default every role runs against a local Ollama model — nothing leaves your machine.
 
+Each role tends to perform better with a different model, since the roles place different demands on a model:
+
+- **architect** — needs strong long-context planning and instruction-following to decompose a blueprint into a correctly ordered task graph.
+- **developer** — needs fast, accurate code generation that sticks closely to the spec.
+- **reviewer** — needs careful, code-focused critique rather than raw generation speed.
+
+`factory_config.yaml` ships with a model assigned to each role accordingly:
+
+```yaml
+model_overrides:
+  architect: "ollama/devstral-small-2:24b-instruct-2512-q4_K_M"
+  developer: "ollama/qwen2.5-coder:14b-instruct-q4_K_M"
+  reviewer:  "ollama/codestral:22b-v0.1-q4_K_M"
+```
+
+Swap any of these for another local Ollama model, or override per role as described below.
+
 ### Optional: connecting a role to the Claude API
 
 You can point any single role at an Anthropic Claude model instead of a local one — for example to validate a local model's review verdicts against Claude, or to benchmark how a local model's implementation compares to Claude's on the same spec. This is opt-in per role; roles left on `ollama/...` stay fully local.
@@ -173,7 +190,7 @@ You can point any single role at an Anthropic Claude model instead of a local on
    ```yaml
    model_overrides:
      architect: "ollama/devstral-small-2:24b-instruct-2512-q4_K_M"
-     developer: "ollama/qwen2.5-coder:32b-instruct-q3_K_M"
+     developer: "ollama/qwen2.5-coder:14b-instruct-q4_K_M"
      reviewer:  "anthropic/claude-sonnet-4-6"   # validate the local developer's diffs against Claude
    ```
 3. Run the pipeline as usual (`sovereign run`, `sovereign review`, …). Roles on an `anthropic/...` model skip the local VRAM load/unload step and call the Claude API directly; roles on `ollama/...` are unaffected.
