@@ -2,20 +2,20 @@
 # Goal: Write a single atomic development task spec file for the given task plan entry.
 
 ## Output Format (CRITICAL)
-Output ONLY the raw markdown content of the spec file. Here is a complete correct example (Domain Event type — note the mandatory BDD criterion as the last bullet):
+Output ONLY the raw markdown content of the spec file. Here is a complete correct example (Domain Event type — note the mandatory BDD criterion as the last bullet). **This example uses a fake placeholder domain ("Widget") purely to show the required FORMAT and SECTION STRUCTURE — it will never match the real blueprint you receive.** Use the actual domain vocabulary from the real task plan entry and blueprint (e.g. Order, Booking, Restaurant — whatever it actually is). Never write "Widget" in real output unless the real blueprint literally uses that word:
 
-# Implement TaskAdded event
+# Implement WidgetCreated event
 
 ## Context
-Mermaid node: DE_TaskAdded — depends on 03_task_aggregate.md, 04_task_entity.md. Event data class only.
+Mermaid node: DE_WidgetCreated — depends on 03_widget_aggregate.md, 04_widget_part_entity.md. Event data class only.
 
 ## Acceptance Criteria
-- Define the TaskAdded domain event with the data fields needed to describe the task that was added.
-- Ensure the Task aggregate publishes the TaskAdded event when a task is successfully added.
+- Define the WidgetCreated domain event with the data fields needed to describe the widget that was created.
+- Ensure the Widget aggregate publishes the WidgetCreated event when a widget is successfully created.
 - BDD: Given the aggregate, When the triggering action occurs, Then the domain event is emitted.
 
 ## Branch Name
-task_added_event
+widget_created_event
 
 ---
 
