@@ -14,13 +14,10 @@ default_model: "ollama/qwen2.5-coder:14b-instruct-q6_K"
 pre_review_checks: []
 
 # Optional per-role model overrides.  Roles not listed fall back to default_model.
-#
-# Any role accepts either a local Ollama model ("ollama/<name>", VRAM-managed
-# automatically) or a remote Anthropic model ("anthropic/<name>", requires
-# ANTHROPIC_API_KEY in the environment). Point a role at Claude to validate or
-# benchmark a local model's output on the same spec, e.g.:
-#   reviewer: "anthropic/claude-sonnet-4-6"
+# Each role is matched to the model that performs best for its task:
+# architect needs strong long-context planning, developer needs fast,
+# accurate code generation, reviewer needs careful code-focused critique.
 model_overrides:
-  architect: "anthropic/claude-sonnet-4-6"
-  developer: "anthropic/claude-sonnet-4-6"
-  reviewer:  "anthropic/claude-sonnet-4-6"
+  architect: "ollama/devstral-small-2:24b-instruct-2512-q4_K_M"
+  developer: "ollama/qwen2.5-coder:14b-instruct-q4_K_M"
+  reviewer:  "ollama/codestral:22b-v0.1-q4_K_M"
