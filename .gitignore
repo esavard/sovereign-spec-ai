@@ -18,3 +18,4 @@ uv.lock
 
 # scaffolding: cached .gitignore templates downloaded from github/gitignore
 scaffolding/gitignore_cache/
+.cecli*
